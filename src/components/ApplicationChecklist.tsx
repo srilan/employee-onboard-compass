@@ -1,3 +1,4 @@
+
 import { Application } from "@/types";
 import { Check, X, Clock, MessageSquare, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -53,16 +54,16 @@ const ApplicationChecklist = ({ applications, onCommentChange }: ApplicationChec
   return (
     <div className="space-y-2">
       {commentCount > 0 && (
-        <Accordion type="single" collapsible className="mb-4">
-          <AccordionItem value="comments">
-            <AccordionTrigger className="text-sm">
+        <Accordion type="single" collapsible className="mb-4 border rounded-md overflow-hidden">
+          <AccordionItem value="comments" className="border-none">
+            <AccordionTrigger className="text-sm px-3 py-2 bg-gray-50 hover:bg-gray-100">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
-                {commentCount} Application Comment{commentCount !== 1 ? 's' : ''}
+                <span className="font-medium">{commentCount} Application Comment{commentCount !== 1 ? 's' : ''}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-2 pt-2">
+            <AccordionContent className="px-0 py-0">
+              <div className="space-y-1 p-2 bg-white">
                 {applications
                   .filter(app => app.comments?.trim())
                   .map(app => (
