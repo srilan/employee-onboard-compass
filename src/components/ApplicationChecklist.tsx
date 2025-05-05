@@ -1,13 +1,20 @@
 
 import { Application } from "@/types";
-import { Check, X, Clock } from "lucide-react";
+import { Check, X, Clock, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 interface ApplicationChecklistProps {
   applications: Application[];
+  onCommentChange?: (appId: string, comment: string) => void;
 }
 
-const ApplicationChecklist = ({ applications }: ApplicationChecklistProps) => {
+const ApplicationChecklist = ({ applications, onCommentChange }: ApplicationChecklistProps) => {
+  const [editingComment, setEditingComment] = useState<string>("");
+  
   const getStatusIcon = (status: Application['status']) => {
     switch (status) {
       case 'completed':
@@ -30,6 +37,12 @@ const ApplicationChecklist = ({ applications }: ApplicationChecklistProps) => {
     }
   };
 
+  const handleSaveComment = (appId: string) => {
+    if (onCommentChange) {
+      onCommentChange(appId, editingComment);
+    }
+  };
+
   return (
     <ul className="space-y-2">
       {applications.map((app) => (
@@ -41,7 +54,45 @@ const ApplicationChecklist = ({ applications }: ApplicationChecklistProps) => {
           )}
         >
           <span className="text-sm">{app.name}</span>
-          <span>{getStatusIcon(app.status)}</span>
+          <div className="flex items-center space-x-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 rounded-full"
+                  onClick={() => setEditingComment(app.comments || "")}
+                >
+                  <MessageSquare 
+                    className={cn(
+                      "h-4 w-4", 
+                      app.comments ? "text-blue-600 fill-blue-200" : "text-gray-400"
+                    )} 
+                  />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Comments for {app.name}</h4>
+                  <Textarea 
+                    placeholder="Add notes or comments about this application..."
+                    value={editingComment}
+                    onChange={(e) => setEditingComment(e.target.value)}
+                    className="min-h-[100px]"
+                  />
+                  <div className="flex justify-end">
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleSaveComment(app.id)}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <span>{getStatusIcon(app.status)}</span>
+          </div>
         </li>
       ))}
     </ul>

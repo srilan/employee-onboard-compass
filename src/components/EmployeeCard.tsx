@@ -1,16 +1,19 @@
 
-import { Employee } from "@/types";
+import { Employee, Application } from "@/types";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Clock } from "lucide-react";
 import ApplicationChecklist from "./ApplicationChecklist";
+import { useState } from "react";
 
 interface EmployeeCardProps {
   employee: Employee;
 }
 
 const EmployeeCard = ({ employee }: EmployeeCardProps) => {
+  const [applications, setApplications] = useState<Application[]>(employee.applications);
+  
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -19,8 +22,8 @@ const EmployeeCard = ({ employee }: EmployeeCardProps) => {
   };
 
   // Calculate onboarding progress percentage
-  const completedApps = employee.applications.filter(app => app.status === 'completed').length;
-  const progressPercentage = (completedApps / employee.applications.length) * 100;
+  const completedApps = applications.filter(app => app.status === 'completed').length;
+  const progressPercentage = (completedApps / applications.length) * 100;
 
   // Format the start date
   const formatDate = (dateString: string) => {
@@ -30,6 +33,13 @@ const EmployeeCard = ({ employee }: EmployeeCardProps) => {
       day: 'numeric',
       year: 'numeric'
     }).format(date);
+  };
+
+  const handleCommentChange = (appId: string, comment: string) => {
+    const updatedApplications = applications.map(app => 
+      app.id === appId ? { ...app, comments: comment } : app
+    );
+    setApplications(updatedApplications);
   };
 
   return (
@@ -67,13 +77,16 @@ const EmployeeCard = ({ employee }: EmployeeCardProps) => {
           </div>
           <div className="mt-4">
             <h4 className="text-sm font-medium mb-2">Applications</h4>
-            <ApplicationChecklist applications={employee.applications} />
+            <ApplicationChecklist 
+              applications={applications} 
+              onCommentChange={handleCommentChange} 
+            />
           </div>
         </div>
       </CardContent>
       <CardFooter className="border-t pt-4">
         <div className="text-xs text-muted-foreground">
-          {employee.applications.length} applications assigned
+          {applications.length} applications assigned
         </div>
       </CardFooter>
     </Card>

@@ -3,6 +3,7 @@ export interface Application {
   id: string;
   name: string;
   status: 'completed' | 'pending' | 'not-started';
+  comments?: string; // Optional comments field
 }
 
 export interface Employee {
