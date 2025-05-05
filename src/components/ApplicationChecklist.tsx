@@ -3,7 +3,6 @@ import { Application } from "@/types";
 import { Check, X, Clock, MessageSquare, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +11,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface ApplicationChecklistProps {
   applications: Application[];
@@ -20,6 +24,7 @@ interface ApplicationChecklistProps {
 
 const ApplicationChecklist = ({ applications, onCommentChange }: ApplicationChecklistProps) => {
   const [editingComment, setEditingComment] = useState<string>("");
+  const [openCommentId, setOpenCommentId] = useState<string | null>(null);
   
   const getStatusIcon = (status: Application['status']) => {
     switch (status) {
@@ -50,6 +55,15 @@ const ApplicationChecklist = ({ applications, onCommentChange }: ApplicationChec
   };
 
   const commentCount = applications.filter(app => app.comments?.trim()).length;
+
+  const toggleComment = (appId: string, currentComment: string) => {
+    if (openCommentId === appId) {
+      setOpenCommentId(null);
+    } else {
+      setOpenCommentId(appId);
+      setEditingComment(currentComment || "");
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -83,50 +97,59 @@ const ApplicationChecklist = ({ applications, onCommentChange }: ApplicationChec
           <li 
             key={app.id} 
             className={cn(
-              "flex items-center justify-between py-1 px-3 rounded-md",
+              "rounded-md",
               getStatusBackground(app.status)
             )}
           >
-            <span className="text-sm">{app.name}</span>
-            <div className="flex items-center space-x-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6 rounded-full"
-                    onClick={() => setEditingComment(app.comments || "")}
-                  >
-                    <MessageSquare 
-                      className={cn(
-                        "h-4 w-4", 
-                        app.comments ? "text-blue-600 fill-blue-200" : "text-gray-400"
-                      )} 
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80">
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Comments for {app.name}</h4>
-                    <Textarea 
-                      placeholder="Add notes or comments about this application..."
-                      value={editingComment}
-                      onChange={(e) => setEditingComment(e.target.value)}
-                      className="min-h-[100px]"
-                    />
-                    <div className="flex justify-end">
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleSaveComment(app.id)}
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <span>{getStatusIcon(app.status)}</span>
+            <div className="flex items-center justify-between py-1 px-3">
+              <span className="text-sm">{app.name}</span>
+              <div className="flex items-center space-x-2">
+                <Collapsible 
+                  open={openCommentId === app.id} 
+                  onOpenChange={() => toggleComment(app.id, app.comments || "")}
+                >
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 rounded-full"
+                    >
+                      <MessageSquare 
+                        className={cn(
+                          "h-4 w-4", 
+                          app.comments ? "text-blue-600 fill-blue-200" : "text-gray-400"
+                        )} 
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
+                </Collapsible>
+                <span>{getStatusIcon(app.status)}</span>
+              </div>
             </div>
+            
+            {openCommentId === app.id && (
+              <CollapsibleContent className="px-3 pb-3">
+                <div className="space-y-2 mt-2">
+                  <Textarea 
+                    placeholder="Add notes or comments about this application..."
+                    value={editingComment}
+                    onChange={(e) => setEditingComment(e.target.value)}
+                    className="min-h-[100px] text-sm"
+                  />
+                  <div className="flex justify-end">
+                    <Button 
+                      size="sm" 
+                      onClick={() => {
+                        handleSaveComment(app.id);
+                        setOpenCommentId(null);
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            )}
           </li>
         ))}
       </ul>
