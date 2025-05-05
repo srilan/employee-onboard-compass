@@ -1,11 +1,16 @@
-
 import { Application } from "@/types";
-import { Check, X, Clock, MessageSquare } from "lucide-react";
+import { Check, X, Clock, MessageSquare, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface ApplicationChecklistProps {
   applications: Application[];
@@ -43,59 +48,88 @@ const ApplicationChecklist = ({ applications, onCommentChange }: ApplicationChec
     }
   };
 
+  const commentCount = applications.filter(app => app.comments?.trim()).length;
+
   return (
-    <ul className="space-y-2">
-      {applications.map((app) => (
-        <li 
-          key={app.id} 
-          className={cn(
-            "flex items-center justify-between py-1 px-3 rounded-md",
-            getStatusBackground(app.status)
-          )}
-        >
-          <span className="text-sm">{app.name}</span>
-          <div className="flex items-center space-x-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6 rounded-full"
-                  onClick={() => setEditingComment(app.comments || "")}
-                >
-                  <MessageSquare 
-                    className={cn(
-                      "h-4 w-4", 
-                      app.comments ? "text-blue-600 fill-blue-200" : "text-gray-400"
-                    )} 
-                  />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Comments for {app.name}</h4>
-                  <Textarea 
-                    placeholder="Add notes or comments about this application..."
-                    value={editingComment}
-                    onChange={(e) => setEditingComment(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                  <div className="flex justify-end">
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleSaveComment(app.id)}
-                    >
-                      Save
-                    </Button>
+    <div className="space-y-2">
+      {commentCount > 0 && (
+        <Accordion type="single" collapsible className="mb-4">
+          <AccordionItem value="comments">
+            <AccordionTrigger className="text-sm">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                {commentCount} Application Comment{commentCount !== 1 ? 's' : ''}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 pt-2">
+                {applications
+                  .filter(app => app.comments?.trim())
+                  .map(app => (
+                    <div key={app.id} className="rounded-md bg-gray-50 p-3">
+                      <div className="font-medium text-sm">{app.name}</div>
+                      <div className="text-sm text-gray-600 mt-1">{app.comments}</div>
+                    </div>
+                  ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
+      
+      <ul className="space-y-2">
+        {applications.map((app) => (
+          <li 
+            key={app.id} 
+            className={cn(
+              "flex items-center justify-between py-1 px-3 rounded-md",
+              getStatusBackground(app.status)
+            )}
+          >
+            <span className="text-sm">{app.name}</span>
+            <div className="flex items-center space-x-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 rounded-full"
+                    onClick={() => setEditingComment(app.comments || "")}
+                  >
+                    <MessageSquare 
+                      className={cn(
+                        "h-4 w-4", 
+                        app.comments ? "text-blue-600 fill-blue-200" : "text-gray-400"
+                      )} 
+                    />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Comments for {app.name}</h4>
+                    <Textarea 
+                      placeholder="Add notes or comments about this application..."
+                      value={editingComment}
+                      onChange={(e) => setEditingComment(e.target.value)}
+                      className="min-h-[100px]"
+                    />
+                    <div className="flex justify-end">
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleSaveComment(app.id)}
+                      >
+                        Save
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-            <span>{getStatusIcon(app.status)}</span>
-          </div>
-        </li>
-      ))}
-    </ul>
+                </PopoverContent>
+              </Popover>
+              <span>{getStatusIcon(app.status)}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 };
 
